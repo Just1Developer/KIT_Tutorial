@@ -5,20 +5,36 @@ public class O1_Mergesort {
     // O(log n) Stack Space due to Recursion
 
     public static int[] _mergesort(int[] array) {
-        mergesort_O1(array);
+        mergesort_O1_noRecursion(array);
         return array;
     }
-    public static void mergesort_O1(int[] array) {
+
+
+    /**
+     * True O(1) space mergesort, without recursion or any additional allocations
+     * besides a constant amount of integers.
+     * @param array the array to sort
+     */
+    public static void mergesort_O1_noRecursion(int[] array) {
         if (array == null || array.length < 2) return;
-        mergesort_O1(array, 0, array.length);
+
+        // It's still log(n) if we start at size 2 and double the size each iteration
+        int segmentSize = 2;
+        while ((segmentSize / 2) < array.length) {
+            for (int index = 0; index < array.length; index += segmentSize) {
+                // Split the given segment in two and assume it is sorted
+                int length = Math.min(array.length - index, segmentSize);
+                if (length == 1) continue;
+
+                /* Merge functionality from below method O1_Mergesort::mergesort_logN */
+                mergesort_inner(array, index, length);
+            }
+            segmentSize *= 2;
+        }
     }
-    private static void mergesort_O1(int[] array, int start, int length) {
-        if (length <= 1) return;
+    private static void mergesort_inner(int[] array, int start, int length) {
         int len1 = (length+1) / 2;
         int len2 = length - len1;
-        mergesort_O1(array, start, len1);
-        mergesort_O1(array, start + len1, len2);
-        // Merge together
         int i1 = start, i2 = start + len1, LIMIT_I1 = start + len1, LIMIT_I2 = start + len1 + len2;
         int swapped = 0;
         for (int k = 0, i = start; k < length - 1; k++, i++) {
@@ -32,14 +48,6 @@ public class O1_Mergesort {
                 swapped++;
             }
         }
-    }
-
-
-
-    public static void mergesort_noRecursion(int[] array) {
-        if (array == null || array.length < 2) return;
-
-
     }
 
 
