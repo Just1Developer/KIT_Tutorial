@@ -19,6 +19,7 @@ public class O1_Mergesort {
         if (array == null || array.length < 2) return;
 
         // It's still log(n) if we start at size 2 and double the size each iteration
+        int perLength = 1;
         int segmentSize = 2;
         while ((segmentSize / 2) < array.length) {
             for (int index = 0; index < array.length; index += segmentSize) {
@@ -27,23 +28,37 @@ public class O1_Mergesort {
                 if (length == 1) continue;
 
                 /* Merge functionality from below method O1_Mergesort::mergesort_logN */
-                mergesort_inner(array, index, length);
+                mergesort_inner(array, index, length, perLength);
             }
             segmentSize *= 2;
+            perLength *= 2;
         }
     }
-    private static void mergesort_inner(int[] array, int start, int length) {
-        int len1 = (length+1) / 2;
+    private static void mergesort_inner(int[] array, int start, int length, int len1) {
         int len2 = length - len1;
         int i1 = start, i2 = start + len1, LIMIT_I1 = start + len1, LIMIT_I2 = start + len1 + len2;
         int swapped = 0;
         for (int k = 0, i = start; k < length - 1; k++, i++) {
-            int realI1 = swapped < i1 - start ? i1 : i1 + len1;
+
+
+
+            // Problem: len1 and len2 are not close together, so this breaks
+            //int realI1 = swapped < i1 - start ? i1 : i1 + len1;
+            int realI1 = swapped < i1 - start ? i1 : Math.min(i1 + len1, start + length - 1);
+            if (i2 >= LIMIT_I2) {
+                i2 = realI1;
+                realI1 = i;
+            }
+
+
+
+
+
             if (i2 >= LIMIT_I2 || (i1 < LIMIT_I1 && array[realI1] < array[i2])) {
-                swap(array, i, realI1);
+                swap(array, i, realI1, 1);
                 i1++;
             } else /*if (true || array[realI1] > array[i2])*/ {
-                swap(array, i, i2);
+                swap(array, i, i2, 2);
                 i2++;
                 swapped++;
             }
@@ -67,7 +82,11 @@ public class O1_Mergesort {
         int i1 = start, i2 = start + len1, LIMIT_I1 = start + len1, LIMIT_I2 = start + len1 + len2;
         int swapped = 0;
         for (int k = 0, i = start; k < length - 1; k++, i++) {
-            int realI1 = swapped < i1 - start ? i1 : i1 + len1;
+            int realI1 = swapped < i1 - start ? i1 : Math.min(i1 + len1, start + length - 1);
+            if (i2 >= LIMIT_I2) {
+                //realI1 = ;
+                i2 = i;
+            }
             if (i2 >= LIMIT_I2 || (i1 < LIMIT_I1 && array[realI1] < array[i2])) {
                 swap(array, i, realI1);
                 i1++;
@@ -80,6 +99,13 @@ public class O1_Mergesort {
     }
 
     private static void swap(int[] array, int i, int j) {
+        swap(array, i, j, 0);
+    }
+    private static void swap(int[] array, int i, int j, int k) {
+        if (i >= array.length || j >= array.length) {
+            System.out.printf("Tried to swap illegal index of array of size %d. i: %d, i%d: %d %n", array.length, i, k, j);
+            return;
+        }
         int temp = array[i];
         array[i] = array[j];
         array[j] = temp;

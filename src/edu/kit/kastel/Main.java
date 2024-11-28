@@ -17,8 +17,10 @@ public class Main {
         if (true) return;   // prevent "unreachable code" error
         */
 
-        int LIM = 20000;
+        int LIM = 15;
         for (int i = 0; i < LIM; i++) {
+            //if (i != 5 && i != 6 && i != 9 && i != 11) continue;
+
             int[] c = new int[i];
             for (int j = 0; j < i; j++) {
                 c[j] = LIM - j;
@@ -26,7 +28,7 @@ public class Main {
             int[] c1 = c.clone();
             O1_Mergesort.mergesort_O1_noRecursion(c1);
             int[] c2 = c.clone();
-            O1_Mergesort.mergesort_O1_noRecursion(c2);
+            Arrays.sort(c2);
 
             if (i % 1000 == 0) System.out.println(i);
 
