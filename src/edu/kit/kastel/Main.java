@@ -10,12 +10,12 @@ import java.util.Arrays;
 public class Main {
     public static void main(String[] args) {
 
-        /*
-        int[] a = {3, 2, 1};
-        O1_Mergesort.mergesort_noRecursion(a);
+        //*
+        int[] a = {1, 3, 5, 7, 9, 2, 4, 6};
+        O1_Mergesort.mergesort_logN(a);
         System.out.println(">> " + Arrays.toString(a));
         if (true) return;   // prevent "unreachable code" error
-        */
+        //*/
 
         int LIM = 15;
         for (int i = 0; i < LIM; i++) {
