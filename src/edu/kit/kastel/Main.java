@@ -1,5 +1,7 @@
 package edu.kit.kastel;
 
+import edu.kit.kastel.aoc_competetive.Day3;
+
 import java.io.File;
 import java.util.Arrays;
 
@@ -8,7 +10,18 @@ import java.util.Arrays;
  * @author uwwfh
  */
 public class Main {
+
+    /**
+     * Advent of Code
+     */
     public static void main(String[] args) {
+        var day = new Day3(0);
+    }
+
+    /**
+     * Other Entry point.
+     */
+    public static void main2(String[] args) {
 
         //*
         int[] a = {1, 3, 5, 7, 9, 2, 4, 6};
