@@ -1,9 +1,10 @@
 package edu.kit.kastel;
 
-import edu.kit.kastel.aoc_competetive.Day3;
+import edu.kit.kastel.aoc_competetive.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Main entry point of the program.
@@ -15,7 +16,30 @@ public class Main {
      * Advent of Code
      */
     public static void main(String[] args) {
-        var day = new Day3(0);
+        var day = new Day4(0);
+        day.part1();
+        day.part2();
+
+        B b = new B();
+    }
+
+    static class A {
+        private A() {
+            System.out.println("A");
+        }
+    }
+    static class B extends A {
+        public B() {
+            System.out.println("B");
+        }
+    }
+
+    public static <T> void myVoid(T myVariable) {
+
+    }
+
+    public static void printList(List<?> list) {
+
     }
 
     /**
