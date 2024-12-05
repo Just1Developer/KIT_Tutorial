@@ -12,20 +12,30 @@ public class AbstractExample {
     }
 
 
+
     // --------- Andere Klassen. Hier nur in einer Datei für Übersicht ---------
 
 
+
     // Static damit wir keine Instanz von AbstractExample brauchen, um auf die Klasse zuzugreifen
+
     public static abstract class A {
         public abstract int calculate(int x);
     }
 
     public static class B extends A {
-        // Todo
+        @Override
+        public int calculate(int x) {
+            return 0;
+        }
     }
 
     public static class C extends A {
         // Todo
+        @Override
+        public int calculate(int x) {
+            return 0;
+        }
     }
 
 }
