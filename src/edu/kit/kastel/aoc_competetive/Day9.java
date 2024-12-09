@@ -1,15 +1,9 @@
 package edu.kit.kastel.aoc_competetive;
 
 import edu.kit.kastel.FileReader;
-import edu.kit.kastel.aoc_competetive.helper.Coord;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 public class Day9 extends FileReader {
 
@@ -17,7 +11,7 @@ public class Day9 extends FileReader {
     private final String[] lines;
 
     List<Integer> memoryL;
-    String memory, memoryRev;
+    List<Block> memory;
 
     /**
      * Initializes code for day 3.
@@ -28,95 +22,44 @@ public class Day9 extends FileReader {
         lines = readFile(filepath);
 
         memoryL = new ArrayList<>();
-        /*
-        memoryFwd = new int[lines[0].length()];
-        memoryBwd = new int[lines[0].length()];
-        for (int i = 0; i < lines[0].length(); i++) {
-            memoryFwd[i] = lines[0].charAt(i) - '0';
-            memoryBwd[memoryBwd.length - 1 - i] = lines[0].charAt(i) - '0';
-        }*/
-        StringBuilder memoryBuilder = new StringBuilder();
-        StringBuilder memoryRevBuilder = new StringBuilder();
+        memory = new ArrayList<>();
         for (int i = 0, id = 0; i < lines[0].length(); i++, id += i & 1) {
-            String insert, insert2;
-            if ((i & 1) == 1) {
-                insert = ".".repeat(lines[0].charAt(i) - '0');
-                insert2 = insert;
-                for (int j = 0; j < lines[0].charAt(i) - '0'; j++) {
-                    memoryL.add(-1);
-                }
-            } else {
-                insert = "%d".formatted(id).repeat(lines[0].charAt(i) - '0');
-                insert2 = "X".repeat(lines[0].charAt(i) - '0');
-                for (int j = 0; j < lines[0].charAt(i) - '0'; j++) {
-                    memoryL.add(id);
-                }
+            int n;
+            if ((i & 1) == 1) n = -1;
+            else n = id;
+            for (int j = 0; j < lines[0].charAt(i) - '0'; j++) {
+                memoryL.add(n);
             }
-            memoryBuilder.append(insert);
-            memoryRevBuilder.insert(0, insert2);
+            memory.add(new Block(n, lines[0].charAt(i) - '0'));
         }
-
-        memory = memoryBuilder.toString();
-        memoryRev = memoryRevBuilder.toString();
     }
 
-    int findFirst(List<Integer> list, int num) {
+    int findFirst(List<Integer> list) {
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) == num) return i;
+            if (list.get(i) == -1) return i;
         }
         return -1;
     }
 
-    int findLastThatIsnt(List<Integer> list, int num) {
+    int findLastThatIsnt(List<Integer> list) {
         for (int i = list.size() - 1; i >= 0; i--) {
-            if (list.get(i) != num) return i;
+            if (list.get(i) != -1) return i;
         }
         return -1;
     }
 
-    String swapChars(String s, int i, int j) {
-        if (i > j) {
-            int t = i;
-            i = j;
-            j = t;
+    int findFirstThatCanAccompany(List<Block> list, int minSize) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).value == -1 && list.get(i).length >= minSize) return i;
         }
-        return (i == 0 ? "" : s.substring(0, i)) + s.charAt(j) + s.substring(i + 1, j) + s.charAt(i) + (j >= s.length() - 1 ? "" : s.substring(j + 1));
+        return list.size() + 1;
     }
 
     public void part1() {
         String out = "part1 >> ";
-/*
-        String mem = memory, memRev = memoryRev;
-        final int LAST_INDEX = memoryRev.length() - 1;
-
         while (true) {
-            int firstFree = mem.indexOf('.');
-            int lastTaken = memRev.indexOf('X');
-            if (firstFree > LAST_INDEX - lastTaken) break;
-            mem = swapChars(mem, firstFree, LAST_INDEX - lastTaken);
-            memRev = swapChars(memRev, LAST_INDEX - firstFree, lastTaken);
-
-            /*
-            System.out.println(mem);
-            System.out.println(memRev);
-            try {
-                Thread.sleep(400);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }* /
-        }
-
-        int checksum = 0;
-        for (int i = 0; i < mem.length(); i++) {
-            if (mem.charAt(i) == '.') break;
-            checksum += (mem.charAt(i) - '0') * i;
-        }
-        out += checksum;
- */
-
-        while (true) {
-            int firstFree = findFirst(memoryL, -1);
-            int lastTaken = findLastThatIsnt(memoryL, -1);
+            int firstFree = findFirst(memoryL);
+            int lastTaken = findLastThatIsnt(memoryL);
             if (firstFree > lastTaken) break;
             // Swap entries, we know List.get(firstFree) == -1
             memoryL.set(firstFree, memoryL.get(lastTaken));
@@ -137,8 +80,68 @@ public class Day9 extends FileReader {
     public void part2() {
         String out = "part2 >> ";
 
+        int movingBlock = memory.size() - 1;
+        int lastBlockMovedValue = memory.size() + 1;
+        while (true) {
+            while (movingBlock >= 0 && (memory.get(movingBlock).value == -1 || memory.get(movingBlock).value >= lastBlockMovedValue)) movingBlock--;
+            if (movingBlock == -1) break;
+            // We have a new block that wants to be moved
+            Block block = new Block(memory.get(movingBlock));
+            lastBlockMovedValue = block.value;
+            // Where should it go?
+            int index = findFirstThatCanAccompany(memory, block.length);
+            if (index > movingBlock) continue;  // We would move it to the right
+            Block space = memory.get(index);
 
+            memory.get(movingBlock).value = -1;
+            if (space.length == block.length) {
+                space.value = block.value;
+            } else {
+                memory.add(index, new Block(block));
+                memory.get(index + 1).length -= block.length;
+            }
+        }
+
+        long checksum = 0, id = 0;
+        for (Block block : memory) {
+            if (block.value == -1) { id += block.length; continue; }
+            for (int i = 0; i < block.length; i++) {
+                checksum += block.value * id;
+                id++;
+            }
+        }
+        out += checksum;
 
         System.out.println(out);
+    }
+
+    String listToString(List<Block> memory) {
+        // Convert to string because I'm lazy and I wanna print it too
+        StringBuilder builder = new StringBuilder();
+        for (Block block : memory) {
+            String s = block.value == -1 ? "." : "%d".formatted(block.value);
+            builder.append(s.repeat(block.length));
+        }
+        return builder.toString();
+    }
+
+    static class Block {
+        // Memory Block
+        int value;
+        int length;
+
+        public Block(int value, int length) {
+            this.value = value;
+            this.length = length;
+        }
+        public Block(Block block) {
+            this.value = block.value;
+            this.length = block.length;
+        }
+
+        @Override
+        public String toString() {
+            return "{value: %d, length: %d}".formatted(value, length);
+        }
     }
 }
