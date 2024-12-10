@@ -58,6 +58,21 @@ public class Coord {
         if (y >= gridForSize.length || x >= gridForSize[y].length) return false;
         return true;
     }
+    public boolean isInBounds(String[] gridForSize) {
+        if (x < 0 || y < 0) return false;
+        if (y >= gridForSize.length || x >= gridForSize[y].length()) return false;
+        return true;
+    }
+    public <T> boolean isInBounds(T[][] gridForSize) {
+        if (x < 0 || y < 0) return false;
+        if (y >= gridForSize.length || x >= gridForSize[y].length) return false;
+        return true;
+    }
+    public boolean isInBounds(int height, int width) {
+        if (x < 0 || y < 0) return false;
+        if (y >= height || x >= width) return false;
+        return true;
+    }
 
     @Override
     public boolean equals(Object o) {
