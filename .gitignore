@@ -27,3 +27,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Since we use different SDK providers on Win/Mac ###
+misc.xml
+### https://stackoverflow.com/a/1274447
