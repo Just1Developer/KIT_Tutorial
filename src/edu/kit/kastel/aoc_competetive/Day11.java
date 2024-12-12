@@ -3,6 +3,7 @@ package edu.kit.kastel.aoc_competetive;
 import edu.kit.kastel.FileReader;
 import edu.kit.kastel.aoc_competetive.helper.Coord;
 
+import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,6 +64,59 @@ public class Day11 extends FileReader {
 
 
 
+    HashMap<Long, Long> depthSplits;          // From the root <key>, how many splits occur in total
+    HashMap<Long, Integer> trackedDepths;           // Begin Depths for each root <key>
+    HashMap<Long, List<Long>> addCounts;      // Store reference to: Root we need to add all of <key in deathsplits> that we need to add
+
+    void recursion(List<Long> previousNumbers, long currentNumber, int currentDepth, final int MAX_DEPTH) {
+        if (currentDepth > MAX_DEPTH) return;
+
+        previousNumbers.add(currentNumber);
+        if (trackedDepths.containsKey(currentNumber)) {
+            int depth = trackedDepths.get(currentNumber);
+            if (depth <= currentDepth) {
+                // Copy the values. previousNumbers[0] is always root
+                long key = previousNumbers.getFirst();
+                if (!addCounts.containsKey(key)) addCounts.put(key, new ArrayList<>());
+                addCounts.get(key).add(currentNumber);
+            } else {
+                trackedDepths.put(currentNumber, currentDepth);
+                depthSplits.put(currentNumber, 0L);
+            }
+            previousNumbers.remove(previousNumbers.size() - 1L);
+            return;
+        }
+
+
+        for (long l : previousNumbers) {
+            if (!depthSplits.containsKey(l)) {
+                depthSplits.put(l, 0L);
+                trackedDepths.put(l, currentDepth);
+            }
+        }
+
+        if (currentNumber == 0) {
+            int newNumber = 1;
+            recursion(previousNumbers, newNumber, currentDepth + 1, MAX_DEPTH);
+        } else {
+            String numberStr = String.valueOf(currentNumber);
+            if (numberStr.length() % 2 == 0) {
+                long l1 = Long.parseLong(numberStr.substring(0, numberStr.length() / 2));
+                long l2 = Long.parseLong(numberStr.substring(numberStr.length() / 2));
+                for (Long previousNumber : previousNumbers) {  // In the list of every number, save that there is a split going on
+                    depthSplits.put(previousNumber, depthSplits.get(previousNumber) + 1);
+                }
+                recursion(previousNumbers, l1, currentDepth + 1, MAX_DEPTH);
+                recursion(previousNumbers, l2, currentDepth + 1, MAX_DEPTH);
+            } else {
+                recursion(previousNumbers, currentNumber * 2024, currentDepth + 1, MAX_DEPTH);
+            }
+        }
+        previousNumbers.removeLast();
+    }
+
+
+/*
     HashMap<Long, List<Long>> depthSplits;          // For the root <key>, how many splits occur at depth offset <0, 1, 2, 3, ...>
     HashMap<Long, Integer> trackedDepths;           // Begin Depths for each root <key>
     HashMap<Map.Entry<Long, Integer>, List<Map.Entry<Long, Integer>>> addCounts;      // Store reference to: <Root, Depth> we need to add all of <key in deathsplits, beginindex> until end
@@ -128,6 +182,8 @@ public class Day11 extends FileReader {
 
         previousNumbers.remove(previousNumbers.size() - 1L);
     }
+
+ */
 
 
 
@@ -223,7 +279,7 @@ public class Day11 extends FileReader {
     }
 
 
-
+/*
     void recursion2(List<Long> previousNumbers, long currentNumber, int currentDepth, final int MAX_DEPTH) {
         if (currentDepth > MAX_DEPTH) return;
 
@@ -297,6 +353,8 @@ public class Day11 extends FileReader {
     }
 
 
+ */
+
 
 
 
@@ -328,51 +386,18 @@ public class Day11 extends FileReader {
     }
 
 
-
     public void part1() {
         String out = "part1 >> ";
 
-        // For demonstration: clear or initialize all relevant structures
-        // Make sure these are defined as class fields or available here
-        // Example:
-        // HashMap<Long, List<Long>> depthSplits = new HashMap<>();
-        // HashMap<Long, Integer> trackedDepths = new HashMap<>();
-        // HashMap<Map.Entry<Long, Integer>, List<Map.Entry<Long, Integer>>> addCounts = new HashMap<>();
-
         long totalStonesAcrossAll = 0;
-        int MAX_DEPTH = 25;
-
         for (long stone : stones) {
-            // Clear or re-init the tracking maps for each root stone
-            depthSplits.clear();
-            trackedDepths.clear();
-            addCounts.clear();
-
-            // Run the recursion for this stone
-            recursion2(new ArrayList<>(), stone, 0, MAX_DEPTH);
-
-            // Now gather all splits. Each entry in depthSplits is keyed by a stone number,
-            // and the value is a List<Long> of split counts at each depth.
-            long totalSplits = 0;
-            for (var entry : depthSplits.entrySet()) {
-                for (long splitsAtDepth : entry.getValue()) {
-                    totalSplits += splitsAtDepth;
-                }
+            recursion(new ArrayList<>(), stone, -2, 4);
+            long exponent = depthSplits.getOrDefault(stone, 0L);
+            for (long ref : addCounts.getOrDefault(stone, new ArrayList<>())) {
+                exponent += depthSplits.getOrDefault(ref, 0L);
             }
-
-            // According to your logic, if the number_of_splits = exponent:
-            // # of stones = 2^(total_splits).
-            // For large numbers, ensure it doesn't overflow a long.
-            // If it's small enough, you can do a shift:
-            // If totalSplits fits into 63 bits, 1L << totalSplits is safe.
-
-            // Be sure you actually want 2^(total_splits) and not (1 + total_splits).
-            // Since you mentioned that the previous approach gave too large results,
-            // confirm your intended formula. For now, we trust your assertion:
-            long stonesForThisRoot = (1L << totalSplits);
-
-            totalStonesAcrossAll += stonesForThisRoot;
-            System.out.println("Starting stone: " + stone + " -> splits: " + totalSplits + ", stones: " + stonesForThisRoot);
+            System.out.println(exponent);
+            totalStonesAcrossAll += exponent + 1;
         }
 
         out += totalStonesAcrossAll;
@@ -412,7 +437,7 @@ public class Day11 extends FileReader {
         String out = "part2 >> ";
         int result = 0;
 
-        iterate(ITERATIONS_PT2 - ITERATIONS);
+        //iterate(ITERATIONS_PT2 - ITERATIONS);
 
         out += result;
         System.out.println(out);

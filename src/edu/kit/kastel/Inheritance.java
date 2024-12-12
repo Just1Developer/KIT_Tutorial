@@ -4,6 +4,8 @@ import java.util.List;
 
 public class Inheritance {
     static class Parent {
+        int x = 5;
+
         protected void print() {
             System.out.println("A");
             System.out.println(getNumber());
@@ -23,12 +25,12 @@ public class Inheritance {
         public int i() {
             return 20;
         }
-        public Parent bruh() {
-            return null;
-        }
     }
 
     static class Child extends Parent {
+        //@Override
+        //int x = 10;
+        
         @Override
         protected void print() {
             System.out.println("B");
