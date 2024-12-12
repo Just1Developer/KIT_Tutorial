@@ -70,13 +70,15 @@ public class Day12 extends FileReader {
 
     public void part2() {
         String out = "part2 >> ";
-        int result = 0;
+        int result1 = 0, result2 = 0;
 
         for (Region region : regions) {
-            result += region.getPricePt2();
+            var res = region.getPricePt2_1();
+            result1 += res[0];
+            result2 += res[1];
         }
 
-        out += result;
+        out += result1 + " or " + result2;
         System.out.println(out);
     }
 
@@ -108,6 +110,27 @@ public class Day12 extends FileReader {
             }
             return perimeter;
         }
+
+        int[] countCorners() {
+            Set<Coord> corners = new HashSet<>();
+            int cornerCount = 0;
+            for (Coord c : coords) {
+                if (isCorner(c, 1, 1)) { corners.add(c); cornerCount++; }
+                if (isCorner(c, 1, -1)) { corners.add(c); cornerCount++; }
+                if (isCorner(c, -1, 1)) { corners.add(c); cornerCount++; }
+                if (isCorner(c, -1, -1)) { corners.add(c); cornerCount++; }
+            }
+            return new int[] { corners.size(), cornerCount };
+        }
+
+        boolean isCorner(Coord coord, int offsetX, int offsetY) {
+            // Check inner corner: adjacents are, but diagonal is not
+            if (coords.contains(coord.add(offsetX, 0)) && coords.contains(coord.add(0, offsetY)) && !coords.contains(coord.add(offsetX, offsetY))) return true;
+            // Or: It's simply a corner:
+            if (!coords.contains(coord.add(offsetX, 0)) && !coords.contains(coord.add(0, offsetY))) return true;
+            return false;
+        }
+
         int getSides() {
             var perimeters = getAllPerimeters();
 
@@ -275,6 +298,11 @@ public class Day12 extends FileReader {
         int getPricePt2() {
             System.out.printf("%d Sides * %d Area%n", getSides(), getArea());
             return getSides() * getArea();
+        }
+        int[] getPricePt2_1() {
+            var result = countCorners();
+            System.out.printf("%d or %d Corners * %d Area%n", result[0], result[1], getArea());
+            return new int[] { result[0] * getArea(), result[1] * getArea() };
         }
     }
 }
