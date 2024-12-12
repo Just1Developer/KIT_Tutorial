@@ -116,6 +116,62 @@ public class Day11 extends FileReader {
     }
 
 
+    //https://www.reddit.com/r/adventofcode/comments/1hbm0al/comment/m1ltr3v/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+    private static List<Long> blink(long rock)
+    {
+        if (rock == 0) return List.of(1L);
+
+        var digits = (long)Math.floor(Math.log10(rock)) + 1;
+
+        if (digits % 2 != 0) return List.of(rock * 2024L);
+
+        var halfDigits = digits / 2;
+        var first = rock / (long)Math.pow(10, halfDigits);
+        var second = rock % (long)Math.pow(10, halfDigits);
+        return List.of(first, second);
+    }
+    private static Map<Long, Long> BlinkRocks(Map<Long, Long> rocks)
+    {
+        Map<Long, Long> result = new HashMap<>();
+
+        for (var entry : rocks.entrySet())
+        {
+            var newRocks = blink(entry.getKey());
+            for (var newRock : newRocks)
+            {
+                long current = result.getOrDefault(newRock, 0L);
+                result.put(newRock, current + entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public void part_both() {
+        Map<Long, Long> rocks = new HashMap<>();
+        for (long l : stones) {
+            long result = rocks.getOrDefault(l, 0L);
+            rocks.put(l, result + 1);
+        }
+        for (int i = 0; i < ITERATIONS; i++) {
+            rocks = BlinkRocks(rocks);
+        }
+        long sum = 0;
+        for (long l : rocks.values()) {
+            sum += l;
+        }
+        System.out.println("part 1 >> " + sum);
+        for (int i = ITERATIONS; i < ITERATIONS_PT2; i++) {
+            rocks = BlinkRocks(rocks);
+        }
+        sum = 0;
+        for (long l : rocks.values()) {
+            sum += l;
+        }
+        System.out.println("part 2 >> " + sum);
+    }
+
+
 /*
     HashMap<Long, List<Long>> depthSplits;          // For the root <key>, how many splits occur at depth offset <0, 1, 2, 3, ...>
     HashMap<Long, Integer> trackedDepths;           // Begin Depths for each root <key>
