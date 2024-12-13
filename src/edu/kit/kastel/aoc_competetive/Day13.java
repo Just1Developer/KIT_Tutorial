@@ -16,7 +16,7 @@ public class Day13 extends FileReader {
     List<int[]> aOffsets, bOffsets, targets;
     int[][][] dp;   // We store int[] as key-value pair for x = tokens and y = # of ways to get there
 
-    final int NEG_INF = Integer.MIN_VALUE;
+    final int INFINITY = Integer.MAX_VALUE;
 
     /**
      * Initializes code for day 3.
@@ -54,76 +54,103 @@ public class Day13 extends FileReader {
     final int COST_A = 3;
     final int COST_B = 1;
 
+    final int Y_INDEX = 0;
+    final int X_INDEX = 1;
+
     int[] calculateMinimum(int i) {
         int[] A = aOffsets.get(i);
         int[] B = bOffsets.get(i);
         int[] target = targets.get(i);
-        dp = new int[target[0] + 1][target[1] + 1][2];
+        dp = new int[target[Y_INDEX] + 1][target[X_INDEX] + 1][4];
         for (int[][] a : dp) {
             for (int[] b : a) {
-                Arrays.fill(b, NEG_INF);
+                b[0] = INFINITY;
+                b[1] = 0;
+                b[2] = 0;
+                b[3] = 0;
             }
         }
-        dp[0][0] = coord(0, 1);
+        dp[0][0] = result(0, 1, 0, 0);
 
-        int tokensA, tokensB, tokenTotal, waysA, waysB;
+        int tokensA, tokensB, tokenTotal, waysA, waysB, waysTotal, chosen;
 
         int[] current = coord(0, 0);
         int[] prev = coord(0, 0);
 
 
 
-        for (; current[1] <= target[1]; current[1]++, prev[1]++) {
-            for (current[0] = 0, prev[0] = 0; current[0] <= target[0]; current[0]++, prev[0]++) {
-                /*if (current[0] == target[0] && current[1] == target[1]) {
-                    System.out.println("Finished");
-                }
-                if (current[1] == current[0]) {
-                    System.out.println("Diagonal");
-                }*/
-
+        for (; current[X_INDEX] <= target[X_INDEX]; current[X_INDEX]++, prev[X_INDEX]++) {
+            for (current[Y_INDEX] = 0, prev[Y_INDEX] = 0; current[Y_INDEX] <= target[Y_INDEX]; current[Y_INDEX]++, prev[Y_INDEX]++) {
                 subtract(prev, A);
                 var dpResultRef = get(prev);
-                tokensA = (dpResultRef[0] == NEG_INF) ? NEG_INF : dpResultRef[0] + COST_A;
-                waysA = Math.max(0, dpResultRef[1]);
+                if (dpResultRef[2] >= 100) {        // Button pressed maximum times
+                    tokensA = INFINITY;
+                    waysA = 0;
+                } else {
+                    tokensA = (dpResultRef[0] == INFINITY) ? INFINITY : dpResultRef[0] + COST_A;
+                    waysA = Math.max(0, dpResultRef[1]);
+                }
                 add(prev, A);
 
                 subtract(prev, B);
                 dpResultRef = get(prev);
-                tokensB = (dpResultRef[0] == NEG_INF) ? NEG_INF : dpResultRef[0] + COST_B;
-                waysB = Math.max(0, dpResultRef[1]);
+                if (dpResultRef[3] >= 100) {        // Button pressed maximum times
+                    tokensB = INFINITY;
+                    waysB = 0;
+                } else {
+                    tokensB = (dpResultRef[0] == INFINITY) ? INFINITY : dpResultRef[0] + COST_B;
+                    waysB = Math.max(0, dpResultRef[1]);
+                }
                 add(prev, B);
 
-                tokenTotal = tokensA != NEG_INF && tokensB != NEG_INF ? Math.min(tokensA, tokensB) : Math.max(tokensA, tokensB);    // One of them is negative infinity, so find the one that isn't instead
-                if (tokenTotal > NEG_INF) {
-                    if (tokenTotal < dp[current[0]][current[1]][0] || dp[current[0]][current[1]][0] == NEG_INF) {
-                        dp[current[0]][current[1]][0] = tokenTotal;
-                        dp[current[0]][current[1]][1] = waysA;  // Todo not yet, on part 2 maybe
-                    } else if (tokenTotal == dp[current[0]][current[1]][0]) {
-                        dp[current[0]][current[1]][1] += waysA + waysB;
+                if (tokensA < tokensB) {
+                    chosen = 2; // A
+                    tokenTotal = tokensA;
+                    waysTotal = waysA;
+                } else {
+                    chosen = 3;
+                    tokenTotal = tokensB;
+                    waysTotal = tokensA == tokensB ? waysA + waysB : waysB;
+                }
+                if (tokenTotal != INFINITY) {
+                    if (tokenTotal < dp[current[Y_INDEX]][current[X_INDEX]][0]) {
+                        dp[current[Y_INDEX]][current[X_INDEX]][0] = tokenTotal;
+                        dp[current[Y_INDEX]][current[X_INDEX]][1] = waysTotal;
+                        dp[current[Y_INDEX]][current[X_INDEX]][chosen]++;
+                    } else if (tokenTotal == dp[current[Y_INDEX]][current[X_INDEX]][0]) {
+                        dp[current[Y_INDEX]][current[X_INDEX]][1] += waysA + waysB;
+                        dp[current[Y_INDEX]][current[X_INDEX]][chosen]++;
                     }
                 }   // Both were negative infinity
             }
         }
-        return dp[target[0]][target[1]];
+        return dp[target[Y_INDEX]][target[X_INDEX]];
     }
 
-    final int[] NULL_COORD = coord(NEG_INF, NEG_INF);
+    final int[] NULL_RESULT = result(INFINITY, 0, 0, 0);
     int[] get(int[] pos) {
-        if (pos[0] < 0 || pos[1] < 0 || pos[1] >= dp.length || pos[0] >= dp[0].length) { return NULL_COORD; }
-        return dp[pos[0]][pos[1]];
+        if (pos[Y_INDEX] < 0 || pos[Y_INDEX] >= dp.length || pos[X_INDEX] < 0 || pos[X_INDEX] >= dp[pos[Y_INDEX]].length) {
+            return NULL_RESULT;
+        }
+        return dp[pos[Y_INDEX]][pos[X_INDEX]];
     }
 
     void subtract(int[] coord, int[] coord2) {
-        coord[0] -= coord2[0];
-        coord[1] -= coord2[1];
+        coord[Y_INDEX] -= coord2[Y_INDEX];
+        coord[X_INDEX] -= coord2[X_INDEX];
     }
     void add(int[] coord, int[] coord2) {
-        coord[0] += coord2[0];
-        coord[1] += coord2[1];
+        coord[Y_INDEX] += coord2[Y_INDEX];
+        coord[X_INDEX] += coord2[X_INDEX];
     }
     int[] coord(int x, int y) {
-        return new int[] {x, y};
+        int[] coord = new int[2];
+        coord[X_INDEX] = x;
+        coord[Y_INDEX] = y;
+        return coord;
+    }
+    int[] result(int tokens, int ways, int pressedA, int pressedB) {
+        return new int[] {tokens, ways, pressedA, pressedB};
     }
 
     public void part1() {
@@ -132,8 +159,8 @@ public class Day13 extends FileReader {
 
         for (int i = 0; i < aOffsets.size(); i++) {
             int minTokens = calculateMinimum(i)[0];
-            System.out.println(minTokens);
-            result += minTokens;
+            System.out.printf("(%d/%d): %s%n", i+1, aOffsets.size(), minTokens != INFINITY ? "" + minTokens : " (not possible)");
+            if (minTokens != INFINITY) result += minTokens;
         }
 
         out += result;
