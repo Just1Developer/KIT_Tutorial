@@ -2,8 +2,8 @@ package edu.kit.kastel.aoc_competetive;
 
 import edu.kit.kastel.FileReader;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,10 +11,9 @@ import java.util.regex.Pattern;
 public class Day13 extends FileReader {
 
     private static final int DAY = 13;
-    private static String[] lines;
+    private final String[] lines;
 
     List<int[]> aOffsets, bOffsets, targets;
-    int[][][] dp;   // We store int[] as key-value pair for x = tokens and y = # of ways to get there
 
     final int INFINITY = Integer.MAX_VALUE;
 
@@ -37,120 +36,167 @@ public class Day13 extends FileReader {
             Matcher m1 = p1.matcher(lines[i]);
             Matcher m2 = p2.matcher(lines[i + 1]);
             Matcher m3 = p3.matcher(lines[i + 2]);
-
-            m1.matches();
-            m2.matches();
-            m3.matches();
             // i + 3 is empty line
-            //System.out.println(i + " + 0: \"" + lines[i] + "\" >> " + m1.matches());
-            //System.out.println(i + " + 1: \"" + lines[i + 1] + "\"" + m2.matches());
-            //System.out.println(i + " + 2: \"" + lines[i + 2] + "\"" + m3.matches());
-            aOffsets.add(coord(Integer.parseInt(m1.group(1)), Integer.parseInt(m1.group(2))));
-            bOffsets.add(coord(Integer.parseInt(m2.group(1)), Integer.parseInt(m2.group(2))));
-            targets.add(coord(Integer.parseInt(m3.group(1)), Integer.parseInt(m3.group(2))));
+
+            if (!m1.matches() || !m2.matches() || !m3.matches()) {   // For some reason it crashes if we don't do this, even though we know it will match
+                System.out.printf("Skipped following lines:%n%s%n%s%n%s%n", lines[i], lines[i + 1], lines[i + 2]);
+                continue;
+            }
+            aOffsets.add(new int[] {Integer.parseInt(m1.group(1)), Integer.parseInt(m1.group(2))});
+            bOffsets.add(new int[] {Integer.parseInt(m2.group(1)), Integer.parseInt(m2.group(2))});
+            targets.add(new int[] {Integer.parseInt(m3.group(1)), Integer.parseInt(m3.group(2))});
+        }
+
+        cost_a_cache[0] = 0;
+        cost_b_cache[0] = 0;
+        for (int k = 1; k <= 100; k++) {
+            cost_a_cache[k] = k * COST_A;
+            cost_b_cache[k] = k * COST_B;
         }
     }
+
+    int[] cost_a_cache = new int[101];
+    int[] cost_b_cache = new int[101];
 
     final int COST_A = 3;
     final int COST_B = 1;
 
-    final int Y_INDEX = 0;
-    final int X_INDEX = 1;
-
     int[] calculateMinimum(int i) {
-        int[] A = aOffsets.get(i);
-        int[] B = bOffsets.get(i);
-        int[] target = targets.get(i);
-        dp = new int[target[Y_INDEX] + 1][target[X_INDEX] + 1][4];
-        for (int[][] a : dp) {
-            for (int[] b : a) {
-                b[0] = INFINITY;
-                b[1] = 0;
-                b[2] = 0;
-                b[3] = 0;
-            }
+        int a_x = aOffsets.get(i)[0];
+        int a_y = aOffsets.get(i)[1];
+        int b_x = bOffsets.get(i)[0];
+        int b_y = bOffsets.get(i)[1];
+        int t_x = targets.get(i)[0];
+        int t_y = targets.get(i)[1];
+        int x, y;
+
+        int[] a_x_cache = new int[101];
+        int[] a_y_cache = new int[101];
+        int[] b_x_cache = new int[101];
+        int[] b_y_cache = new int[101];
+        a_x_cache[0] = 0;
+        a_y_cache[0] = 0;
+        b_x_cache[0] = 0;
+        b_y_cache[0] = 0;
+        for (int k = 1; k <= 100; k++) {
+            a_x_cache[k] = a_x_cache[k - 1] + a_x;
+            a_y_cache[k] = a_y_cache[k - 1] + a_y;
+            b_x_cache[k] = b_x_cache[k - 1] + b_x;
+            b_y_cache[k] = b_y_cache[k - 1] + b_y;
         }
-        dp[0][0] = result(0, 1, 0, 0);
 
-        int tokensA, tokensB, tokenTotal, waysA, waysB, waysTotal, chosen;
-
-        int[] current = coord(0, 0);
-        int[] prev = coord(0, 0);
-
-
-
-        for (; current[X_INDEX] <= target[X_INDEX]; current[X_INDEX]++, prev[X_INDEX]++) {
-            for (current[Y_INDEX] = 0, prev[Y_INDEX] = 0; current[Y_INDEX] <= target[Y_INDEX]; current[Y_INDEX]++, prev[Y_INDEX]++) {
-                subtract(prev, A);
-                var dpResultRef = get(prev);
-                if (dpResultRef[2] >= 100) {        // Button pressed maximum times
-                    tokensA = INFINITY;
-                    waysA = 0;
-                } else {
-                    tokensA = (dpResultRef[0] == INFINITY) ? INFINITY : dpResultRef[0] + COST_A;
-                    waysA = Math.max(0, dpResultRef[1]);
-                }
-                add(prev, A);
-
-                subtract(prev, B);
-                dpResultRef = get(prev);
-                if (dpResultRef[3] >= 100) {        // Button pressed maximum times
-                    tokensB = INFINITY;
-                    waysB = 0;
-                } else {
-                    tokensB = (dpResultRef[0] == INFINITY) ? INFINITY : dpResultRef[0] + COST_B;
-                    waysB = Math.max(0, dpResultRef[1]);
-                }
-                add(prev, B);
-
-                if (tokensA < tokensB) {
-                    chosen = 2; // A
-                    tokenTotal = tokensA;
-                    waysTotal = waysA;
-                } else {
-                    chosen = 3;
-                    tokenTotal = tokensB;
-                    waysTotal = tokensA == tokensB ? waysA + waysB : waysB;
-                }
-                if (tokenTotal != INFINITY) {
-                    if (tokenTotal < dp[current[Y_INDEX]][current[X_INDEX]][0]) {
-                        dp[current[Y_INDEX]][current[X_INDEX]][0] = tokenTotal;
-                        dp[current[Y_INDEX]][current[X_INDEX]][1] = waysTotal;
-                        dp[current[Y_INDEX]][current[X_INDEX]][chosen]++;
-                    } else if (tokenTotal == dp[current[Y_INDEX]][current[X_INDEX]][0]) {
-                        dp[current[Y_INDEX]][current[X_INDEX]][1] += waysA + waysB;
-                        dp[current[Y_INDEX]][current[X_INDEX]][chosen]++;
+        int minTokens = Integer.MAX_VALUE, tokens;
+        int ways = 0;
+        for (int aPressed = 0; aPressed <= 100; aPressed++) {
+            for (int bPressed = 0; bPressed <= 100; bPressed++) {
+                x = a_x_cache[aPressed] + b_x_cache[bPressed];
+                y = a_y_cache[aPressed] + b_y_cache[bPressed];
+                if (x > t_x || y > t_y) break;
+                if (x == t_x && y == t_y) {
+                    tokens = cost_a_cache[aPressed] + cost_b_cache[bPressed];
+                    if (minTokens == tokens) ways++;
+                    else if (tokens < minTokens) {
+                        minTokens = tokens;
+                        ways = 1;
                     }
-                }   // Both were negative infinity
+                }
             }
         }
-        return dp[target[Y_INDEX]][target[X_INDEX]];
+
+        // Result at target
+        return new int[] { minTokens, ways };
     }
 
-    final int[] NULL_RESULT = result(INFINITY, 0, 0, 0);
-    int[] get(int[] pos) {
-        if (pos[Y_INDEX] < 0 || pos[Y_INDEX] >= dp.length || pos[X_INDEX] < 0 || pos[X_INDEX] >= dp[pos[Y_INDEX]].length) {
-            return NULL_RESULT;
+    long calculateMinimum2(int i) {
+        // Retrieve inputs
+        long a_x = aOffsets.get(i)[0];
+        long a_y = aOffsets.get(i)[1];
+        long b_x = bOffsets.get(i)[0];
+        long b_y = bOffsets.get(i)[1];
+
+        long t_x = targets.get(i)[0] + 10_000_000_000_000L;
+        long t_y = targets.get(i)[1] + 10_000_000_000_000L;
+
+        long det = a_x * b_y - a_y * b_x;
+        if (det != 0) {
+            // Unique solution
+            long X = t_x * b_y - b_x * t_y;
+            long Y = -a_y * t_x + a_x * t_y;
+
+            // Check if X%det==0 and Y%det==0 for perfect integral solution
+            if (X % det == 0 && Y % det == 0) {
+                long a = X / det;
+                long b = Y / det;
+                return a * COST_A + b * COST_B;
+            } else {
+                // No integral solution here
+                return 0;
+            }
+
+        } else {
+            // det(A)=0 => infinite solutions or no solution
+            boolean consistent;
+            consistent = (t_x * b_y == t_y * b_x) && (t_x * a_y == t_y * a_x);
+
+            if (!consistent) {
+                // No solutions
+                return 0;
+            }
+
+            long d = gcd(a_x, b_x);
+            if (t_x % d != 0) {
+                // No integral solution
+                return 0;
+            }
+
+            // Reduce equation
+            long a_xp = a_x / d;
+            long b_xp = b_x / d;
+            long t_xp = t_x / d;
+
+            long[] eg = extendedGCD(a_xp, b_xp);
+            long a0 = eg[1] * t_xp;
+            long b0 = eg[2] * t_xp;
+
+            // General solution:
+            // a = a0 + k*(b_xp)
+            // b = b0 - k*(a_xp)
+
+            // Objective: Minimize 3a + b
+            // = 3(a0 + k*b_xp) + (b0 - k*a_xp)
+            // = (3b_xp - a_xp)*k + (3a0 + b0)
+
+            long coeff_k = 3*b_xp - a_xp;
+
+            if (coeff_k == 0) {
+                // constant for all solutions
+                return a0 * COST_A + b0 * COST_B;
+            } else {
+                // no finite minimum exists.
+                return 0; // Indicate no finite minimum
+            }
         }
-        return dp[pos[Y_INDEX]][pos[X_INDEX]];
     }
 
-    void subtract(int[] coord, int[] coord2) {
-        coord[Y_INDEX] -= coord2[Y_INDEX];
-        coord[X_INDEX] -= coord2[X_INDEX];
+    // Extended Euclidean Algorithm to find x,y for ax+by=gcd(a,b)
+    private long[] extendedGCD(long a, long b) {
+        if (b == 0) {
+            return new long[]{a, 1, 0};
+        }
+        long[] result = extendedGCD(b, a % b);
+        long g = result[0];
+        long x = result[1];
+        long y = result[2];
+        return new long[]{g, y, x - (a / b) * y};
     }
-    void add(int[] coord, int[] coord2) {
-        coord[Y_INDEX] += coord2[Y_INDEX];
-        coord[X_INDEX] += coord2[X_INDEX];
-    }
-    int[] coord(int x, int y) {
-        int[] coord = new int[2];
-        coord[X_INDEX] = x;
-        coord[Y_INDEX] = y;
-        return coord;
-    }
-    int[] result(int tokens, int ways, int pressedA, int pressedB) {
-        return new int[] {tokens, ways, pressedA, pressedB};
+
+    private long gcd(long a, long b) {
+        while (b != 0) {
+            long t = b;
+            b = a % b;
+            a = t;
+        }
+        return Math.abs(a);
     }
 
     public void part1() {
@@ -159,7 +205,7 @@ public class Day13 extends FileReader {
 
         for (int i = 0; i < aOffsets.size(); i++) {
             int minTokens = calculateMinimum(i)[0];
-            System.out.printf("(%d/%d): %s%n", i+1, aOffsets.size(), minTokens != INFINITY ? "" + minTokens : " (not possible)");
+            //System.out.printf("(%d/%d): %s%n", i+1, aOffsets.size(), minTokens != INFINITY ? "" + minTokens : "not possible");
             if (minTokens != INFINITY) result += minTokens;
         }
 
@@ -169,11 +215,15 @@ public class Day13 extends FileReader {
 
     public void part2() {
         String out = "part2 >> ";
-        int result1 = 0, result2 = 0;
+        BigInteger result = BigInteger.ZERO;
 
+        for (int i = 0; i < aOffsets.size(); i++) {
+            long minTokens = Math.max(0, calculateMinimum2(i));
+            //System.out.printf("(%d/%d): %s%n", i+1, aOffsets.size(), minTokens != 0 ? "" + minTokens : "not possible");
+            if (minTokens != INFINITY) result = result.add(BigInteger.valueOf(minTokens));
+        }
 
-
-        out += result1 + " or " + result2;
+        out += result;
         System.out.println(out);
     }
 }
