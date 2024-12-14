@@ -34,6 +34,16 @@ public class Coord {
     public Coord abs() {
         return new Coord(Math.abs(this.x), Math.abs(this.y));
     }
+    public Coord multiply(int factor) {
+        return new Coord(this.x * factor, this.y * factor);
+    }
+    public Coord mod(int width, int height) {
+        int x = this.x % width;
+        int y = this.y % height;
+        if (x < 0) x += width;
+        if (y < 0) y += height;
+        return new Coord(x, y);
+    }
 
     /**
      * Returns absolute distance as Coordinates x and y.

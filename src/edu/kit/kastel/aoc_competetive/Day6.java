@@ -173,7 +173,7 @@ public class Day6 extends FileReader {
         }
     }
 
-    static class Map {
+    private static class Map {
         public char[][] map;
 
         public Map(char[][] map) {
@@ -214,7 +214,7 @@ public class Day6 extends FileReader {
         }
     }
 
-    static class Coord {
+    private static class Coord {
         private int x, y;
         public Coord(int x, int y) {
             this.x = x;
