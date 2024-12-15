@@ -103,7 +103,7 @@ public class Day15_pt2 extends FileReader {
             robotY += deltaY;
         } else {
             // Find box to swap it with
-            int currentX = robotX + 4 * deltaX;
+            int currentX = robotX + 3 * deltaX;
             int currentY = robotY + deltaY;
 
             if (deltaX == 0) {
@@ -111,10 +111,6 @@ public class Day15_pt2 extends FileReader {
                 List<int[]> boxesToMove = new ArrayList<>();
                 Queue<int[]> boxesToCheck = new LinkedList<>();
                 char newNextMapChar = map.get(currentY)[currentX];
-
-                if (robotX == 10 && robotY == 7) {
-                    System.out.println("..");
-                }
 
                 if (newNextMapChar == BOX_OTHER) currentX--;
 
@@ -168,7 +164,7 @@ public class Day15_pt2 extends FileReader {
 
                 boolean leftBox = deltaX < 0;
                 char[] line = map.get(currentY);
-                int steps = Math.abs(currentX - (robotX + deltaX));
+                int steps = Math.abs(currentX - (robotX));
                 for (int x = robotX + deltaX, i = 0; i < steps; x += deltaX, i++) {
                     line[x] = leftBox ? BOX : BOX_OTHER;
                     leftBox = !leftBox;
@@ -205,30 +201,25 @@ public class Day15_pt2 extends FileReader {
     }
 
     public void part1() {
-        String out = "part1 >> ";
-        int result = 0;
-
-        print();
-        for (char[] moves : this.moves) {
-            for (char move : moves) {
-                moveRobot(move);
-                System.out.println(move + ":");
-                print();
-            }
-        }
-        print();
-
+        String out = "part1 >> ---";
         out += getCoordinateSum();
         System.out.println(out);
     }
 
     public void part2() {
         String out = "part2 >> ";
-        int result = 0;
 
+        print();
+        for (char[] moves : this.moves) {
+            for (char move : moves) {
+                moveRobot(move);
+                //System.out.println(move + ":");
+                //print();
+            }
+        }
+        print();
 
-
-        out += result;
+        out += getCoordinateSum();
         System.out.println(out);
     }
 }

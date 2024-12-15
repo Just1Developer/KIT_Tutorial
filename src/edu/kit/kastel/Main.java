@@ -16,7 +16,7 @@ public class Main {
      * Advent of Code
      */
     public static void main(String[] args) {
-        var day = new Day15_pt2(2);
+        var day = new Day15_pt2(0);
         day.part1();
         day.part2();
 

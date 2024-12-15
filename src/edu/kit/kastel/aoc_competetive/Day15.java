@@ -134,13 +134,8 @@ public class Day15 extends FileReader {
     }
 
     public void part1() {
-        String out = "part1 >> ---";
-        out += getCoordinateSum();
-        System.out.println(out);
-    }
-
-    public void part2() {
-        String out = "part2 >> ";
+        String out = "part1 >> ";
+        int result = 0;
 
         print();
         for (char[] moves : this.moves) {
@@ -152,6 +147,12 @@ public class Day15 extends FileReader {
         }
         print();
 
+        out += getCoordinateSum();
+        System.out.println(out);
+    }
+
+    public void part2() {
+        String out = "part2 >> ---";
         out += getCoordinateSum();
         System.out.println(out);
     }
