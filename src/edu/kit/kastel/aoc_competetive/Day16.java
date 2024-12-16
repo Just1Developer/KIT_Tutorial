@@ -99,29 +99,32 @@ public class Day16 extends FileReader {
             Tile rotate1 = new Tile(t.x, t.y, t.minValue + COST_TURN, (t.direction + 1) % 4);
             Tile rotate2 = new Tile(t.x, t.y, t.minValue + COST_TURN, t.direction == 0 ? 3 : t.direction - 1);
             Tile walk = new Tile(t.x + (t.direction == 1 ? 1 : t.direction == 3 ? -1 : 0), t.y + (t.direction == 2 ? 1 : t.direction == 0 ? -1 : 0), t.minValue + COST_STRAIGHT, t.direction);
-            if (maze.get(walk.y)[walk.x][walk.direction].minValue > walk.minValue && walk.minValue < minCost) {
+            if (maze.get(walk.y)[walk.x][walk.direction].minValue >= walk.minValue && walk.minValue < minCost) {
                 // Never happens with edges / walls
                 q.add(walk);
-                walk.backPtrX = t.x;
-                walk.backPtrY = t.y;
-                walk.backPtrDirection = t.direction;
+                if (maze.get(walk.y)[walk.x][walk.direction].minValue > walk.minValue) {
+                    walk.backPointers.clear();
+                }
+                walk.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(walk.y)[walk.x][walk.direction] = walk;
                 if (walk.x == endX && walk.y == endY) {
                     minCost = walk.minValue;
                 }
             }
-            if (maze.get(t.y)[t.x][rotate1.direction].minValue > rotate1.minValue && rotate1.minValue < minCost) {
+            if (maze.get(t.y)[t.x][rotate1.direction].minValue >= rotate1.minValue && rotate1.minValue < minCost) {
                 q.add(rotate1);
-                rotate1.backPtrX = t.x;
-                rotate1.backPtrY = t.y;
-                rotate1.backPtrDirection = t.direction;
+                if (maze.get(t.y)[t.x][rotate1.direction].minValue > rotate1.minValue) {
+                    rotate1.backPointers.clear();
+                }
+                rotate1.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(t.y)[t.x][rotate1.direction] = rotate1;
             }
-            if (maze.get(t.y)[t.x][rotate2.direction].minValue > rotate2.minValue && rotate2.minValue < minCost) {
+            if (maze.get(t.y)[t.x][rotate2.direction].minValue >= rotate2.minValue && rotate2.minValue < minCost) {
                 q.add(rotate2);
-                rotate2.backPtrX = t.x;
-                rotate2.backPtrY = t.y;
-                rotate2.backPtrDirection = t.direction;
+                if (maze.get(t.y)[t.x][rotate2.direction].minValue > rotate2.minValue) {
+                    rotate2.backPointers.clear();
+                }
+                rotate2.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(t.y)[t.x][rotate2.direction] = rotate2;
             }
         }
@@ -143,6 +146,7 @@ public class Day16 extends FileReader {
         String out = "part2 >> ---";
         int result = 0;
 
+        // Todo for (all minimums of finish tile, find all backpointers and do it again, until there are no more backpointers)
         // Path already found
         int currentX, currentY, currentDirection;
 
@@ -152,6 +156,7 @@ public class Day16 extends FileReader {
 
     static class Tile {
         int backPtrX = -1, backPtrY = -1, backPtrDirection = -1;
+        List<int[]> backPointers = new ArrayList<>();
 
         final int x, y;
         final int minValue;
