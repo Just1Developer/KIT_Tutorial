@@ -1,12 +1,15 @@
 package edu.kit.kastel.aoc_competetive;
 
 import edu.kit.kastel.FileReader;
+import edu.kit.kastel.aoc_competetive.helper.Coord;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 
 public class Day16 extends FileReader {
 
@@ -91,7 +94,7 @@ public class Day16 extends FileReader {
         q.add(maze.get(startY)[startX][1]); // 1 is start direction
         int minCost = Integer.MAX_VALUE;
         while (!q.isEmpty()) {
-            Tile t = q.poll();
+            Tile t = q.remove();
 
             // If is edge, cancel
             if (t.minValue == -1) continue;
@@ -102,8 +105,8 @@ public class Day16 extends FileReader {
             if (maze.get(walk.y)[walk.x][walk.direction].minValue >= walk.minValue && walk.minValue < minCost) {
                 // Never happens with edges / walls
                 q.add(walk);
-                if (maze.get(walk.y)[walk.x][walk.direction].minValue > walk.minValue) {
-                    walk.backPointers.clear();
+                if (maze.get(walk.y)[walk.x][walk.direction].minValue == walk.minValue) {
+                    walk.backPointers.addAll(maze.get(walk.y)[walk.x][walk.direction].backPointers);
                 }
                 walk.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(walk.y)[walk.x][walk.direction] = walk;
@@ -113,16 +116,16 @@ public class Day16 extends FileReader {
             }
             if (maze.get(t.y)[t.x][rotate1.direction].minValue >= rotate1.minValue && rotate1.minValue < minCost) {
                 q.add(rotate1);
-                if (maze.get(t.y)[t.x][rotate1.direction].minValue > rotate1.minValue) {
-                    rotate1.backPointers.clear();
+                if (maze.get(t.y)[t.x][rotate1.direction].minValue == rotate1.minValue) {
+                    rotate1.backPointers.addAll(maze.get(t.y)[t.x][rotate1.direction].backPointers);
                 }
                 rotate1.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(t.y)[t.x][rotate1.direction] = rotate1;
             }
             if (maze.get(t.y)[t.x][rotate2.direction].minValue >= rotate2.minValue && rotate2.minValue < minCost) {
                 q.add(rotate2);
-                if (maze.get(t.y)[t.x][rotate2.direction].minValue > rotate2.minValue) {
-                    rotate2.backPointers.clear();
+                if (maze.get(t.y)[t.x][rotate2.direction].minValue == rotate2.minValue) {
+                    rotate2.backPointers.addAll(maze.get(t.y)[t.x][rotate2.direction].backPointers);
                 }
                 rotate2.backPointers.add(new int[] { t.x, t.y, t.direction });
                 maze.get(t.y)[t.x][rotate2.direction] = rotate2;
@@ -131,11 +134,14 @@ public class Day16 extends FileReader {
         return minCost;
     }
 
+    int minScore;
+
     public void part1() {
         String out = "part1 >> ";
         int result = 0;
 
         result = findPath();
+        minScore = result;
         print();
 
         out += result;
@@ -143,14 +149,26 @@ public class Day16 extends FileReader {
     }
 
     public void part2() {
-        String out = "part2 >> ---";
+        String out = "part2 >> ";
         int result = 0;
 
-        // Todo for (all minimums of finish tile, find all backpointers and do it again, until there are no more backpointers)
-        // Path already found
-        int currentX, currentY, currentDirection;
+        Set<Coord> seats = new HashSet<>();
+        Set<List<Integer>> duplicateCheck = new HashSet<>();    // Doesn't terminate otherwise, we seem to have loops in the backpointers for some reason
+        Queue<Tile> tiles = new LinkedList<>();
+        for (Tile endTile : maze.get(endY)[endX]) {
+            if (endTile.minValue != minScore) continue;
+            tiles.add(endTile);
+        }
+        while (!tiles.isEmpty()) {
+            Tile t = tiles.remove();
+            seats.add(new Coord(t.x, t.y));
+            if (!duplicateCheck.add(List.of(t.x, t.y, t.direction))) continue;
+            for (int[] backptr : t.backPointers) {
+                tiles.add(maze.get(backptr[1])[backptr[0]][backptr[2]]);
+            }
+        }
 
-        out += result;
+        out += seats.size();
         System.out.println(out);
     }
 

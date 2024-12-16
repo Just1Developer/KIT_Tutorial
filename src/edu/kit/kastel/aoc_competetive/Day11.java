@@ -45,8 +45,7 @@ public class Day11 extends FileReader {
     }
 
     //https://www.reddit.com/r/adventofcode/comments/1hbm0al/comment/m1ltr3v/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-    private static List<Long> blink(long rock)
-    {
+    private static List<Long> blink(long rock) {
         if (rock == 0) return List.of(1L);
 
         var digits = (long)Math.floor(Math.log10(rock)) + 1;
@@ -58,15 +57,13 @@ public class Day11 extends FileReader {
         var second = rock % (long)Math.pow(10, halfDigits);
         return List.of(first, second);
     }
-    private static Map<Long, Long> BlinkRocks(Map<Long, Long> rocks)
-    {
+
+    private static Map<Long, Long> BlinkRocks(Map<Long, Long> rocks) {
         Map<Long, Long> result = new HashMap<>();
 
-        for (var entry : rocks.entrySet())
-        {
+        for (var entry : rocks.entrySet()) {
             var newRocks = blink(entry.getKey());
-            for (var newRock : newRocks)
-            {
+            for (var newRock : newRocks) {
                 long current = result.getOrDefault(newRock, 0L);
                 result.put(newRock, current + entry.getValue());
             }
