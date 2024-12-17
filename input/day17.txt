@@ -1,0 +1,29 @@
+Register A: 51571418
+Register B: 0
+Register C: 0
+
+Program: 2,4,1,1,7,5,0,3,1,4,4,5,5,5,3,0
+
+2,4  B = A & 0b111
+1,1  B ^= 0b001
+7,5  C = A >> B                     C = A / 2^B
+0,3  A >> 3                         A = A / 2 << 3
+1,4  B ^= 0b100
+4,5  B ^= C
+5,5  OUT B & 0b111
+3,0  REPEAT TILL A == 0
+
+B = last 3 bits of a
+Flip last bit of B
+C = A >> B
+Flip 3rd bit of B
+B XOR C
+
+Meaning: Zahl i hängt immer von 3 Bits aus A ab
+
+Target: 0b010
+Also: 0b110
+
+
+
+A >> 3
