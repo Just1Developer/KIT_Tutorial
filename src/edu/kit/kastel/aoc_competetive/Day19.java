@@ -155,28 +155,70 @@ public class Day19 extends FileReader {
         }
     }
 
-    int i = 0;
+    TrieNode root;
+    HashMap<String, Long> cache = new HashMap<>();
+
     public void part2() {
         String out = "part2 >> ";
-        int result = 0;
+        long result = 0;
 
-        /*for (String towel : towels) {
-            i++;
-            if (!towelPattern.matcher(towel).matches()) continue;
-            int ways = distinctWaysRec(towel);
-            result += ways;
-            System.out.println(ways);
-        }*/
-        buildLookUpTable(maxLength);
+        root = new TrieNode((char)0);
+        for (String towel : patterns) root.addPatternRec(towel);
         for (String towel : towels) {
             if (!towelPattern.matcher(towel).matches()) continue;
-            int ways = lookUpTable.getOrDefault(towel, -1);
-            distinctWaysRec(towel);
-            result += ways;
-            System.out.println(ways);
+            result += root.matchDistinct(towel);
         }
 
         out += result;
         System.out.println(out);
+    }
+
+    private class TrieNode {
+        static final String colors = "wubrg";
+
+        private final TrieNode[] children;
+        private final char color;
+        private boolean possible;
+
+        public TrieNode(char color) {
+            this.children = new TrieNode[5];
+            this.color = color;
+            this.possible = false;
+        }
+
+        public void addPatternRec(String towelPattern) {
+            if (towelPattern.isEmpty()) {
+                possible = true;
+                return;
+            }
+            char stripe = towelPattern.charAt(0);
+            int col = colors.indexOf(stripe);
+            if (col == -1) throw new OutOfMemoryError(" :) ");
+            if (children[col] == null) children[col] = new TrieNode(stripe);
+            children[col].addPatternRec(towelPattern.substring(1));
+        }
+
+        public long matchDistinct(String towelPattern) {
+            if (color == 0 && cache.containsKey(towelPattern))
+                return cache.get(towelPattern);
+            long result = 0;
+
+            // Finished
+            if (towelPattern.isEmpty()) {
+                return possible ? 1 : 0;
+            }
+
+            if (possible) result += root.matchDistinct(towelPattern);
+            int col = colors.indexOf(towelPattern.charAt(0));
+            // If sub-trie exists
+            if (children[col] != null) {
+                result += children[col].matchDistinct(towelPattern.substring(1));
+            }
+            // Cache if root
+            if (color == 0) {
+                cache.put(towelPattern, result);
+            }
+            return result;
+        }
     }
 }
