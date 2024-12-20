@@ -26,6 +26,8 @@ public class Day20 extends FileReader {
     int startX, startY;
     int endX, endY;
 
+    final int minSavedThreshold;
+
     /**
      * Initializes code for day 3.
      * @param exampleNr The example number for the filepath.
@@ -33,6 +35,8 @@ public class Day20 extends FileReader {
     public Day20(int exampleNr) {
         String filepath = "./input/day%d%s.txt".formatted(DAY, exampleNr > 0 ? "e%d".formatted(exampleNr) : "");
         lines = readFile(filepath);
+
+        minSavedThreshold = exampleNr > 0 ? 1 : 100;
 
         processor = new ArrayList<>();
         processorFwd = new ArrayList<>();
@@ -199,72 +203,79 @@ public class Day20 extends FileReader {
         return minValue;
     }
 
-    Result findPath(int skippedWall1Y, int skippedWall1X, int skippedWall2Y, int skippedWall2X, long defaultScore) {
+    void findPath(Result2 out, int skippedWall1Y, int skippedWall1X) {
         Queue<Tile> q = new LinkedList<>();
         q.add(processor.get(startY)[startX]);
         processor.get(startY)[startX].minValue = 0;
         long minValue = Integer.MAX_VALUE;
+        int distinct = 0;
         while (!q.isEmpty()) {
             Tile t = q.remove();
 
             // If is edge, cancel
             if (t.minValue == -1) continue;
             if (t.isOutOfBounds()) continue;
-
-            /*
-            if (t.x == endX && t.y == endY) {
-                if (t.minValue < minValue) minValue = t.minValue;
-            }*/
-
+            
             if (t.y > 0) {
                 // Move up
                 Tile up = processor.get(t.y - 1)[t.x];
-                long score = enqueueConditionalTile(q, t, up, skippedWall1Y, skippedWall1X, skippedWall2Y, skippedWall2X);
-                if (score < minValue) minValue = score;
+                long score = enqueueConditionalTile(q, t, up, skippedWall1Y, skippedWall1X);
+                if (score < minValue) {
+                    minValue = score;
+                    distinct = 1;
+                }
+                else if (score == minValue) distinct++;
             }
             if (t.y < processor.size() - 1) {
                 // Move down
                 Tile down = processor.get(t.y + 1)[t.x];
-                long score = enqueueConditionalTile(q, t, down, skippedWall1Y, skippedWall1X, skippedWall2Y, skippedWall2X);
-                if (score < minValue) minValue = score;
+                long score = enqueueConditionalTile(q, t, down, skippedWall1Y, skippedWall1X);
+                if (score < minValue) {
+                    minValue = score;
+                    distinct = 1;
+                }
+                else if (score == minValue) distinct++;
             }
 
             if (t.x > 0) {
                 // Move left
                 Tile left = processor.get(t.y)[t.x - 1];
-                long score = enqueueConditionalTile(q, t, left, skippedWall1Y, skippedWall1X, skippedWall2Y, skippedWall2X);
-                if (score < minValue) minValue = score;
+                long score = enqueueConditionalTile(q, t, left, skippedWall1Y, skippedWall1X);
+                if (score < minValue) {
+                    minValue = score;
+                    distinct = 1;
+                }
+                else if (score == minValue) distinct++;
             }
             if (t.x < processor.get(t.y).length - 1) {
                 // Move right
                 Tile right = processor.get(t.y)[t.x + 1];
-                long score = enqueueConditionalTile(q, t, right, skippedWall1Y, skippedWall1X, skippedWall2Y, skippedWall2X);
-                if (score < minValue) minValue = score;
+                long score = enqueueConditionalTile(q, t, right, skippedWall1Y, skippedWall1X);
+                if (score < minValue) {
+                    minValue = score;
+                    distinct = 1;
+                }
+                else if (score == minValue) distinct++;
             }
         }
-        // Check if both walls were used in the shortest path (if they were valid)
-        /*long score = (skippedWall1X == -1 || skippedWall1Y == -1 || processor.get(endY)[endX].path.contains("(%d:%d)".formatted(skippedWall1X, skippedWall1Y)))
-                && (skippedWall2X == -1 || skippedWall2Y == -1 || processor.get(endY)[endX].path.contains("(%d:%d)".formatted(skippedWall2X, skippedWall2Y)))
-                ? minValue : defaultScore;* /
-        Coord wallCoord1 = new Coord(skippedWall1X, skippedWall1Y);
-        Coord wallCoord2 = new Coord(skippedWall2X, skippedWall2Y);
-        long score = (wallCoord1.isOutOfBounds(map) || processor.get(endY)[endX].pathList.contains(wallCoord1))
-                && (wallCoord1.isOutOfBounds(map) || processor.get(endY)[endX].pathList.contains(wallCoord2))
-                ? minValue : defaultScore;
-        //return new Result(score, processor.get(endY)[endX].path);//*/
-        return new Result(minValue, processor.get(endY)[endX].path);
+        Tile end = processor.get(endY)[endX];
+        out.score = end.minValue;
+        out.distinct = distinct;
+        out.path = end.pathList;
     }
 
     private long enqueueConditionalTile(Queue<Tile> q, Tile t, Tile neighbor,
-                                        int skippedWall1Y, int skippedWall1X, int skippedWall2Y, int skippedWall2X) {
+                                        int skippedWall1Y, int skippedWall1X) {
         boolean isWall = map[neighbor.y][neighbor.x] == '#'
-                && (neighbor.y != skippedWall1Y || neighbor.x != skippedWall1X)
-                && (neighbor.y != skippedWall2Y || neighbor.x != skippedWall2X);
+                && (neighbor.y != skippedWall1Y || neighbor.x != skippedWall1X);
         if(!isWall && neighbor.minValue > t.minValue + 1) {
             neighbor.minValue = t.minValue + 1;
-            neighbor.path = t.path + "(%d:%d)".formatted(neighbor.x, neighbor.y);
-            neighbor.pathList = t.pathList;
-            neighbor.pathList.add(new Coord(neighbor.x, neighbor.y));   // I hope this referencing doesn't cause bugs, we dont care abt intermediate paths
+            //neighbor.path = t.path + "(%d:%d)".formatted(neighbor.x, neighbor.y);
+            //neighbor.pathList = t.pathList;
+            //neighbor.pathList = t.pathList;
+            //neighbor.pathList.add(neighbor.x);
+            //neighbor.pathList.add(neighbor.y);
+            //neighbor.pathList.add(new Coord(neighbor.x, neighbor.y));   // I hope this referencing doesn't cause bugs, we dont care abt intermediate paths
             q.add(neighbor);
             if (neighbor.x == endX && neighbor.y == endY) {
                 return neighbor.minValue;
@@ -277,6 +288,7 @@ public class Day20 extends FileReader {
         for (Tile[] tiles : processor) {
             for (Tile tile : tiles) {
                 tile.minValue = Integer.MAX_VALUE;
+                tile.clearPath();
             }
         }
         processor.get(startY)[startX].minValue = 0;
@@ -301,10 +313,20 @@ public class Day20 extends FileReader {
     int minScore;
 
     private static class Result {
-        final long score;
-        final String path;
+        long score;
+        String path;
 
         public Result(long score, String path) {
+            this.score = score;
+            this.path = path;
+        }
+    }
+    private static class Result2 {
+        long score;
+        int distinct = 0;
+        List<Integer> path;
+
+        public Result2(long score, List<Integer> path) {
             this.score = score;
             this.path = path;
         }
@@ -342,80 +364,37 @@ public class Day20 extends FileReader {
         }
     }
 
+    // 893170 too high
+    // 890870 (101 ps) too high
     public void part1() {
         String out = "part1 >> ";
         long result = 0;
-        Set<CoordSet> coordSets = new HashSet<>();
+        long result2 = 0;
 
-        Result defaultResult = findPath(-1, -1, -1, -1, -1);
-        long defaultScore = defaultResult.score;
-        Set<String> paths = new HashSet<>();
-        paths.add(defaultResult.path);
-        Map<Long, Long> scores = new HashMap<>();
-        int minSavedThreshold = 1;  // example should be 382
+        var outResult = new Result2(0, null);
+        findPath(outResult,-1, -1);
+        long defaultScore = outResult.score;
+        // example should be 382 with Threshold 1, NO! Should be 44 (# of cheats)
 
-        Map<String, Long> savedTimes = new HashMap<>();
+        //Map<String, Long> savedTimes = new HashMap<>();
+        Map<List<Integer>, Long> savedTimes = new HashMap<>();
 
-
-
-        int[] neighbors = {1};
-        for (int y = 0; y < map.length; y++) {
+        for (int y = 0; y < map.length; y++) {          // Don't count borders
             for (int x = 0; x < map[y].length; x++) {
                 if (isNotWall(x, y)) continue;
-
                 // Once with only that
                 resetProcessor();
-                Result res = findPath(y, x, -1, -1, defaultScore);
-                savedTimes.put(res.path, defaultScore - res.score);
-                long saved = defaultScore - res.score;
-                if (saved != 0)
-                    scores.put(saved, scores.getOrDefault(saved, 0L) + (paths.add(res.path) ? 1 : 0));
-
-                /*
-                for (int offy : neighbors) {
-                    if (isNotWall(x, y + offy)) continue;
-                    resetProcessor();
-                    res = findPath(y, x, y + offy, x, defaultScore);
-                    savedTimes.put(res.path, defaultScore - res.score);
-
-                    if (res.score >= defaultScore) continue;
-
-                    saved = defaultScore - res.score;
-                    scores.put(saved, scores.getOrDefault(saved, 0L) + (paths.add(res.path) ? 1 : 0));
-                }
-                for (int offx : neighbors) {
-                    if (isNotWall(x + offx, y)) continue;
-                    resetProcessor();
-                    res = findPath(y, x, y, x + offx, defaultScore);
-                    savedTimes.put(res.path, defaultScore - res.score);
-
-                    if (res.score >= defaultScore) continue;
-
-                    saved = defaultScore - res.score;
-                    scores.put(saved, scores.getOrDefault(saved, 0L) + (paths.add(res.path) ? 1 : 0));
-                    //if (res < result) result = res;
-                }
-                 */
+                findPath(outResult, y, x);
+                savedTimes.put(outResult.path, defaultScore - outResult.score);
+                result2 += defaultScore - outResult.score >= minSavedThreshold ? outResult.distinct : 0;
             }
+            System.out.printf("%d/%d complete.%n", y + 1, map.length);
         }
-
-        for (var entry : scores.entrySet()) {
-            if (entry.getKey() < minSavedThreshold) continue;
-            result += entry.getKey() * entry.getValue();
-        }
-        long result2 = 0;
         for (var value : savedTimes.values()) {
-            if (value >= minSavedThreshold) result2 += value;
+            if (value >= minSavedThreshold) result += value;
         }
 
-        /* Todo debug
-        for (var entry : savedTimes.entrySet()) {
-            System.out.println(entry.getValue() + " saved: " + entry.getKey());
-        }
-        print(-1, -1, -1, -1);*/
-
-        out += result;
-        out += " || " + result2;
+        out += result + " || " + result2;
         System.out.println(out);
     }
 
@@ -438,7 +417,7 @@ public class Day20 extends FileReader {
 
         int wallValue = 3;
 
-        List<Coord> pathList;
+        List<Integer> pathList;
         String path = "";
 
         boolean hasJump = true;
@@ -453,7 +432,13 @@ public class Day20 extends FileReader {
             this.y = y;
             this.minValue = minValue;
             pathList = new ArrayList<>();
-            pathList.add(new Coord(x, y));
+            clearPath();
+        }
+
+        public void clearPath() {
+            pathList.clear();
+            pathList.add(x);
+            pathList.add(y);
         }
 
         public boolean isOutOfBounds() {
