@@ -112,8 +112,13 @@ public class Day22 extends FileReader {
         var example = new NumSeq(-2, 1, -1, 3);
 
         int j = 0;
+        long startIt = System.currentTimeMillis();
         for (NumSeq target : sequences) {
-            if (++j % 1000 == 0) System.out.println(j);
+            if (++j % 1000 == 0) {
+                long endIt = System.currentTimeMillis();
+                System.out.println(j + ", Time: " + (endIt - startIt) + "ms");
+                start = System.currentTimeMillis();
+            }
             int profit = 0;
 
             for (int secret : numbers) {
@@ -175,7 +180,7 @@ public class Day22 extends FileReader {
         System.out.println(out);
     }
 
-    static class NumSeq {
+    private static class NumSeq {
         int val1, val2, val3, val4;
 
         public NumSeq(int val1, int val2, int val3, int val4) {
@@ -230,20 +235,5 @@ public class Day22 extends FileReader {
         public String toString() {
             return "(NumSeq: %d, %d, %d, %d)".formatted(val1, val2, val3, val4);
         }
-    }
-
-    void increase(int[] targetQueue) {
-        targetQueue[0]++;
-        if (targetQueue[0] < 10) return;
-        targetQueue[0] = -9;
-        targetQueue[1]++;
-        if (targetQueue[1] < 10) return;
-        targetQueue[1] = -9;
-        targetQueue[2]++;
-        if (targetQueue[2] < 10) return;
-        targetQueue[2] = -9;
-        targetQueue[3]++;
-        if (targetQueue[3] < 10) return;
-        targetQueue[3] = -9;
     }
 }
