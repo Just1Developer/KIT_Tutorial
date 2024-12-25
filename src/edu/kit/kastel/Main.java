@@ -1,6 +1,6 @@
 package edu.kit.kastel;
 
-import edu.kit.kastel.aoc_competetive.Day24;
+import edu.kit.kastel.aoc_competetive.Day25;
 
 import java.io.File;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ public class Main {
      * Advent of Code
      */
     public static void main(String[] args) {
-        var day = new Day24(0);
+        var day = new Day25(0);
         day.part1();
         day.part2();
 
