@@ -20,7 +20,7 @@ public class Main {
             System.out.println(ticket.getKunde().getName() + " hat Ticket für " + ticket.getFilm() + ", Platz " + ticket.getPlatz() + " für " + ticket.getPreis() + " Euro.");
         }
 
-        // Rabatt nachträglich ändern (Bug: wirkt sich nicht auf bestehende Tickets aus)
+        // Rabatt nachträglich ändern
         kinoManager.getRabattManager().setRabatt("Matrix", 50);
 
         System.out.println("Sitzprüfung: Platz 1 für Matrix belegt? " + kinoManager.getSitzManager().istSitzBelegt("Matrix", 1));

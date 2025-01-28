@@ -16,7 +16,7 @@ class KinoManager {
     public Ticket erstelleTicket(Kunde kunde, String film, int platz) {
         if (sitzManager.istSitzBelegt(film, platz)) {
             System.out.println("Sitz " + platz + " ist bereits belegt.");
-            return null; // Fehler: Es gibt keinen Hinweis, ob das Ticket wirklich null ist
+            return null;
         }
 
         double basisPreis = 10.0;
@@ -25,7 +25,6 @@ class KinoManager {
 
         Ticket ticket = new Ticket(kunde, film, platz, endPreis);
 
-        // Fehler: Tickets werden vor Sitzreservierung hinzugefügt
         tickets.add(ticket);
         sitzManager.reserviereSitz(film, platz);
 
@@ -33,7 +32,7 @@ class KinoManager {
     }
 
     public List<Ticket> getTickets() {
-        return tickets; // Fehler: Gibt die Referenz direkt zurück, erlaubt Manipulation
+        return tickets;
     }
 
     public RabattManager getRabattManager() {

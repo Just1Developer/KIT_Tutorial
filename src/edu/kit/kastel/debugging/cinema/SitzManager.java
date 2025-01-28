@@ -13,7 +13,6 @@ class SitzManager {
             belegteSitze.put(film, new HashSet<>());
         }
 
-        // Fehler: Platzprüfung kann inkonsistent sein
         if (belegteSitze.get(film).contains(platz)) {
             return false; // Sitz bereits belegt
         }
@@ -22,7 +21,6 @@ class SitzManager {
     }
 
     public boolean istSitzBelegt(String film, int platz) {
-        // Fehler: Return-Wert bei nicht existierendem Film nicht eindeutig
         return belegteSitze.containsKey(film) && belegteSitze.get(film).contains(platz);
     }
 }
