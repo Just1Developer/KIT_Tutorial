@@ -32,7 +32,7 @@ abstract class Candy {
     }
 
     /**
-     * Gets the quantity of the candy.
+     * Gets the quantity of the candy.dddd
      * @return The quantity of the candy.
      */
     public int getQuantity() {

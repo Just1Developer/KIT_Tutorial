@@ -5,17 +5,21 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class ListTask {
+    private int i;
 
     public static void main(String[] args) {
-        Integer[] numbers = { 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 };
-        String[] strings = { "Hello", "World", "my", "Name", "is", "[]" };
+        Integer[] numbers = {1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89};
+        String[] strings = {"Hello", "World", "my", "Name", "is", "[]"};
 
         List<Integer> listInt = toList(numbers);
         List<String> listStr = toList(strings);
     }
 
-    public abstract  <T> List<T> _toList(T[] array);
+    public abstract <T> List<T> _toList(T[] array);
 
+
+
+}
 
 
 

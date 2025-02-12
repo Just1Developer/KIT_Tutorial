@@ -4,14 +4,14 @@ public class LambdaMethods {
 
     // See methods foo (Line 27) and executeSomeCommand (Line 63) down below
 
-    public static class Runnable {
-        void run() { }
-        void run2() { }
+    public interface Runnable {
+        void run();
+        void run2();
     }
 
     public static class RunnableClass {
         void run() { }
-        void run2() { }
+        static void run2() { }
     }
 
     public void someMethodCall(Runnable r) {
@@ -41,8 +41,7 @@ public class LambdaMethods {
             public void run() {
                 // ...
             }
-            @Override
-            public void run2() {
+            public static void run2() {
                 // ...
             }
         });

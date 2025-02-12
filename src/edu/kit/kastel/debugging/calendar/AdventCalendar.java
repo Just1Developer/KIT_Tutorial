@@ -38,15 +38,12 @@ final class AdventCalendar {
      */
     public AdventCalendar(List<Candy> candies) {
         this.maxDays = candies.size();
-        this.candies = candies;
+        this.candies = new ArrayList<>();
         this.currentDay = 0;
         this.backup = new ArrayList<>();
         this.openedDoorIndices = new HashSet<>();
 
-        for (int i = 0; i < candies.size(); i++) {
-            this.candies.add(candies.get(i));
-            this.backup.add(candies.get(i));
-        }
+        this.backup.addAll(candies);
     }
 
     /**
